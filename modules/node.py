@@ -35,7 +35,10 @@ class Node:
         '''
         given a single observation, will return the output of the tree
         '''
-	# Your code here
+        if self.label == None:
+            key = instance[self.decision_attribute]
+            return self.children[key].classify(instance)
+        return self.label 
 	pass
 
     def print_tree(self, indent = 0):

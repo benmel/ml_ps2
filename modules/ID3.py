@@ -28,8 +28,11 @@ def check_homogenous(data_set):
     Output: Return either the homogenous attribute or None
     ========================================================================================================
      '''
-    # Your code here
-    pass
+    test_value = data_set[0][0]
+    for example in data_set:
+        if example[0] != test_value:
+            return None
+    return test_value 
 # ======== Test Cases =============================
 # data_set = [[0],[1],[1],[1],[1],[1]]
 # check_homogenous(data_set) ==  None
@@ -75,8 +78,13 @@ def mode(data_set):
     Output: mode of index 0.
     ========================================================================================================
     '''
-    # Your code here
-    pass
+    frequency = [0, 0]
+    for example in data_set:
+        if example[0] == 0:
+            frequency[0] += 1
+        else:
+            frequency[1] += 1
+    return 0 if frequency[0] >= frequency[1] else 1
 # ======== Test case =============================
 # data_set = [[0],[1],[1],[1],[1],[1]]
 # mode(data_set) == 1
