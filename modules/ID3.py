@@ -101,6 +101,26 @@ def entropy(data_set):
     Output: Returns entropy. See Textbook for formula
     ========================================================================================================
     '''
+    total = 0
+    n0 = 0
+    n1 = 0
+    for example in data_set:
+        total += 1
+        if example[0] == 0:
+            n0 += 1
+        elif example[0] == 1:
+            n1 += 1
+
+    if total == 0:
+        return 0
+
+    p0 = n0/float(total)
+    p1 = n1/float(total)
+    log0 = math.log(p0, 2) if p0 != 0.0 else 0.0
+    log1 = math.log(p1, 2) if p1 != 0.0 else 0.0
+
+    return -p0*log0 - p1*log1
+
 
 
 # ======== Test case =============================
