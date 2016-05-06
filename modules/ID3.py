@@ -195,7 +195,7 @@ def split_on_nominal(data_set, attribute):
         else:
             attr_dict[key] = [example]
     return attr_dict
-          
+
 # ======== Test case =============================
 # data_set, attr = [[0, 4], [1, 3], [1, 2], [0, 0], [0, 0], [0, 4], [1, 4], [0, 2], [1, 2], [0, 1]], 1
 # split_on_nominal(data_set, attr) == {0: [[0, 0], [0, 0]], 1: [[0, 1]], 2: [[1, 2], [0, 2], [1, 2]], 3: [[1, 3]], 4: [[0, 4], [0, 4], [1, 4]]}
@@ -213,8 +213,15 @@ def split_on_numerical(data_set, attribute, splitting_value):
     Output: Tuple of two lists as described above
     ========================================================================================================
     '''
-    # Your code here
-    pass
+    less = []
+    greater_or_equal = []
+    for example in data_set:
+        if example[attribute] < splitting_value:
+            less.append(example)
+        else:
+            greater_or_equal.append(example)
+    return less, greater_or_equal        
+
 # ======== Test case =============================
 # d_set,a,sval = [[1, 0.25], [1, 0.89], [0, 0.93], [0, 0.48], [1, 0.19], [1, 0.49], [0, 0.6], [0, 0.6], [1, 0.34], [1, 0.19]],1,0.48
 # split_on_numerical(d_set,a,sval) == ([[1, 0.25], [1, 0.19], [1, 0.34], [1, 0.19]],[[1, 0.89], [0, 0.93], [0, 0.48], [1, 0.49], [0, 0.6], [0, 0.6]])
