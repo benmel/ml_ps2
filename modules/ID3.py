@@ -142,8 +142,16 @@ def gain_ratio_nominal(data_set, attribute):
     Output: Returns gain_ratio. See https://en.wikipedia.org/wiki/Information_gain_ratio
     ========================================================================================================
     '''
-    # Your code here
-    pass
+    attr_values = split_on_nominal(data_set, attribute)
+    entropy_sum = 0.0
+    intrinsic_value = 0.0
+    for val in attr_values.keys():
+        p = len(attr_values[val])/float(len(data_set))
+        entropy_sum += p*entropy(attr_values[val])
+        intrinsic_value -= p*math.log(p, 2)
+    information_gain = entropy(data_set) - entropy_sum
+    return information_gain/intrinsic_value
+
 # ======== Test case =============================
 # data_set, attr = [[1, 2], [1, 0], [1, 0], [0, 2], [0, 2], [0, 0], [1, 3], [0, 4], [0, 3], [1, 1]], 1
 # gain_ratio_nominal(data_set,attr) == 0.11470666361703151
