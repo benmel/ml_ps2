@@ -175,8 +175,27 @@ def gain_ratio_numeric(data_set, attribute, steps):
     Output: This function returns the gain ratio and threshold value
     ========================================================================================================
     '''
-    # Your code here
-    pass
+    threshold = {}
+    for index in xrange(0, len(data_set), steps):
+        value = data_set[index][attribute]
+        threshold[value] = None
+
+    for value in threshold.keys():
+        less, greater_or_equal = split_on_numerical(data_set, attribute, value)
+        if len(less) > 0 and len(greater_or_equal) > 0:
+            entropy_sum = 0.0
+            intrinsic_value = 0.0
+            for value_list in [less, greater_or_equal]:
+                p = len(value_list)/float(len(data_set))
+                entropy_sum += p*entropy(value_list)
+                intrinsic_value -= p*math.log(p, 2)
+            information_gain = entropy(data_set) - entropy_sum
+            threshold[value] = information_gain/intrinsic_value
+
+    value = max(threshold.iterkeys(), key=(lambda k: threshold[k]))
+    return threshold[value], value
+
+
 # ======== Test case =============================
 # data_set,attr,step = [[0,0.05], [1,0.17], [1,0.64], [0,0.38], [0,0.19], [1,0.68], [1,0.69], [1,0.17], [1,0.4], [0,0.53]], 1, 2
 # gain_ratio_numeric(data_set,attr,step) == (0.31918053332474033, 0.64)
