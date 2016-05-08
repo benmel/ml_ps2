@@ -1,6 +1,7 @@
 import math
 from node import Node
 import sys
+import copy
 
 def ID3(data_set, attribute_metadata, numerical_splits_count, depth):
     '''
@@ -15,8 +16,37 @@ def ID3(data_set, attribute_metadata, numerical_splits_count, depth):
     ========================================================================================================
 
     '''
-    # Your code here
-    pass
+    if depth == 0 or check_homogenous(data_set) is not None or len(attribute_metadata) == 0:
+        return default_node(data_set)    
+    else:
+        (best_attribute, split_value) = pick_best_attribute(data_set, attribute_metadata, numerical_splits_count)
+        if best_attribute == False:
+            return default_node(data_set)
+        
+        node = Node()
+        node.decision_attribute = best_attribute
+        node.name = attribute_metadata[best_attribute]['name']
+        updated_numerical_splits_count = copy.deepcopy(numerical_splits_count)
+        updated_numerical_splits_count[best_attribute] -= 1
+        
+        if split_value == False:
+            node.is_nominal = True
+            examples = split_on_nominal(data_set, best_attribute)
+            for key, values in examples.items():
+                node.children[key] = ID3(values, attribute_metadata, updated_numerical_splits_count, depth - 1)
+        else:
+            node.is_nominal = False
+            node.splitting_value = split_value
+            (less, greater_or_equal) = split_on_numerical(data_set, best_attribute, split_value)
+            node.children[0] = ID3(less, attribute_metadata, updated_numerical_splits_count, depth - 1)
+            node.children[1] = ID3(greater_or_equal, attribute_metadata, updated_numerical_splits_count, depth - 1)
+        
+        return node    
+        
+def default_node(data_set):
+    node = Node()
+    node.label = mode(data_set)
+    return node
 
 def check_homogenous(data_set):
     '''
@@ -54,8 +84,24 @@ def pick_best_attribute(data_set, attribute_metadata, numerical_splits_count):
     Output: best attribute, split value if numeric
     ========================================================================================================
     '''
-    # Your code here
-    pass
+    best_attribute = {'index': None, 'gain_ratio': 0, 'split_value': None}
+    iterator = enumerate(attribute_metadata)
+    next(iterator) # skip first
+    for idx, attribute in iterator:
+        if attribute['is_nominal'] == True:
+            gain_ratio = gain_ratio_nominal(data_set, idx)
+            if gain_ratio > best_attribute['gain_ratio']:
+                best_attribute['index'] = idx
+                best_attribute['gain_ratio'] = gain_ratio
+                best_attribute['split_value'] = False
+        else:
+            if numerical_splits_count[idx] > 0:
+                gain_ratio, split_value = gain_ratio_numeric(data_set, idx, 1)
+                if gain_ratio > best_attribute['gain_ratio']:
+                    best_attribute['index'] = idx
+                    best_attribute['gain_ratio'] = gain_ratio
+                    best_attribute['split_value'] = split_value
+    return (best_attribute['index'], best_attribute['split_value']) if best_attribute['gain_ratio'] != 0 else (False, False)                
 
 # # ======== Test Cases =============================
 # numerical_splits_count = [20,20]
@@ -193,7 +239,7 @@ def gain_ratio_numeric(data_set, attribute, steps):
             threshold[value] = information_gain/intrinsic_value
 
     value = max(threshold.iterkeys(), key=(lambda k: threshold[k]))
-    return threshold[value], value
+    return (threshold[value], value)
 
 
 # ======== Test case =============================
@@ -247,7 +293,7 @@ def split_on_numerical(data_set, attribute, splitting_value):
             less.append(example)
         else:
             greater_or_equal.append(example)
-    return less, greater_or_equal        
+    return (less, greater_or_equal)        
 
 # ======== Test case =============================
 # d_set,a,sval = [[1, 0.25], [1, 0.89], [0, 0.93], [0, 0.48], [1, 0.19], [1, 0.49], [0, 0.6], [0, 0.6], [1, 0.34], [1, 0.19]],1,0.48
