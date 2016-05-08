@@ -87,25 +87,3 @@ class Node:
                     return string
 
         return dnf_helper(self, "")
-
-
-
-
-
-
-
-
-
-
-
-
-
-            if node.label != None:
-                if node.label == 1:
-                    return str(attribute) + '=' + str(split)
-                else:
-                    return None
-            else:
-                if node.is_nominal:
-                    for key in node.children.keys():
-                         dnf_helper(node.children[key], node.name, key) + ' v '
