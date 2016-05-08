@@ -45,7 +45,6 @@ class Node:
                 else:
                     return self.children[1].classify(instance)
         return self.label 
-	pass
 
     def print_tree(self, indent = 0):
         '''
@@ -60,4 +59,53 @@ class Node:
         '''
         returns the disjunct normalized form of the tree.
         '''
-        pass
+        def dnf_helper(node, string):
+            if node.label != None:
+                if node.label != 0:
+                    return string
+                else:
+                    return None
+            else:
+                strings = []
+                if node.is_nominal:
+                    for key in node.children.keys():
+                        passdown = string + ' ^ ' + node.name + '=' + key + ' ^ '
+                        passup = dnf_helper(node.children[key], passdown)
+                        if passup != None:
+                            strings.append(passup)
+                    for s in strings:
+                        string += ' v ' + s
+                    return string
+                else:
+                    for x in range(0, 2):
+                        passdown = string + ' ^ ' + node.name + '=' + x + ' ^ '
+                        passup = dnf_helper(node.children[x], passdown)
+                        if passup != None:
+                            strings.append(passup)
+                    for s in strings:
+                        string += ' v ' + s
+                    return string
+
+        return dnf_helper(self, "")
+
+
+
+
+
+
+
+
+
+
+
+
+
+            if node.label != None:
+                if node.label == 1:
+                    return str(attribute) + '=' + str(split)
+                else:
+                    return None
+            else:
+                if node.is_nominal:
+                    for key in node.children.keys():
+                         dnf_helper(node.children[key], node.name, key) + ' v '
