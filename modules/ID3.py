@@ -196,7 +196,7 @@ def gain_ratio_nominal(data_set, attribute):
         entropy_sum += p*entropy(attr_values[val])
         intrinsic_value -= p*math.log(p, 2)
     information_gain = entropy(data_set) - entropy_sum
-    return information_gain/intrinsic_value
+    return information_gain/intrinsic_value if intrinsic_value != 0.0 else 0
 
 # ======== Test case =============================
 # data_set, attr = [[1, 2], [1, 0], [1, 0], [0, 2], [0, 2], [0, 0], [1, 3], [0, 4], [0, 3], [1, 1]], 1
