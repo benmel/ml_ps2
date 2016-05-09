@@ -15,7 +15,7 @@ def reduced_error_pruning(root,training_set,validation_set):
 
     if root.label != None:
         return
-    elif (True in map(lambda x: x.label == None, root.children.values()):
+    elif (True in map(lambda x: x.label == None, root.children.values())):
         unpruned = validation_accuracy(root, validation_set)
         children = root.children
         root.label = mode(training_set)

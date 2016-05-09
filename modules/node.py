@@ -19,6 +19,7 @@
 # splitting_value - if numeric, where to split
 #
 # name - name of the attribute being split on
+import copy
 
 class Node:
     def __init__(self):
@@ -37,6 +38,8 @@ class Node:
         '''
         if self.label == None:
             key = instance[self.decision_attribute]
+            if key == None:
+                import pdb;pdb.set_trace()
             if self.is_nominal == True:
                 return self.children[key].classify(instance)
             else:
@@ -54,36 +57,35 @@ class Node:
         # Your code here
         pass
 
-
     def print_dnf_tree(self):
-        '''
-        returns the disjunct normalized form of the tree.
-        '''
-        def dnf_helper(node, string):
-            if node.label != None:
-                if node.label != 0:
-                    return string
+        def dnf_tree_path(node, current_path, paths):
+            if node.label is not None:
+                if node.label == 1:
+                    paths.append(current_path)
+                    return copy.deepcopy(paths)
                 else:
-                    return None
+                    return []
             else:
-                strings = []
+                current_path_and = current_path
+                if current_path != '':
+                    current_path_and += ' ^ '
                 if node.is_nominal:
+                    nominal_paths = []
                     for key in node.children.keys():
-                        passdown = string + ' ^ ' + node.name + '=' + key + ' ^ '
-                        passup = dnf_helper(node.children[key], passdown)
-                        if passup != None:
-                            strings.append(passup)
-                    for s in strings:
-                        string += ' v ' + s
-                    return string
+                        nominal_path = current_path_and + node.name + '=' + str(key)
+                        nominal_dnf = dnf_tree_path(node.children[key], nominal_path, copy.deepcopy(paths))
+                        if len(nominal_dnf) > 0:
+                            nominal_paths += nominal_dnf
+                    return nominal_paths        
                 else:
-                    for x in range(0, 2):
-                        passdown = string + ' ^ ' + node.name + '=' + x + ' ^ '
-                        passup = dnf_helper(node.children[x], passdown)
-                        if passup != None:
-                            strings.append(passup)
-                    for s in strings:
-                        string += ' v ' + s
-                    return string
-
-        return dnf_helper(self, "")
+                    less_path = current_path_and + node.name + '<' + str(node.splitting_value)
+                    greater_or_equal_path = current_path_and + node.name + '>=' + str(node.splitting_value)
+                    return dnf_tree_path(node.children[0], less_path, copy.deepcopy(paths)) + dnf_tree_path(node.children[1], greater_or_equal_path, copy.deepcopy(paths))
+        
+        paths = dnf_tree_path(self, '', [])
+        if len(paths) == 0:
+            print 'No DNF'
+        elif len(paths) == 1:
+            print paths[0]
+        elif len(paths) > 1:
+            print '(' + ') + ('.join(paths) + ')'        

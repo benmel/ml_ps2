@@ -26,16 +26,15 @@ def ID3(data_set, attribute_metadata, numerical_splits_count, depth):
         node = Node()
         node.decision_attribute = best_attribute
         node.name = attribute_metadata[best_attribute]['name']
+        node.is_nominal = attribute_metadata[best_attribute]['is_nominal']
         updated_numerical_splits_count = copy.deepcopy(numerical_splits_count)
         updated_numerical_splits_count[best_attribute] -= 1
-        
-        if split_value == False:
-            node.is_nominal = True
+
+        if node.is_nominal:
             examples = split_on_nominal(data_set, best_attribute)
             for key, values in examples.items():
                 node.children[key] = ID3(values, attribute_metadata, updated_numerical_splits_count, depth - 1)
         else:
-            node.is_nominal = False
             node.splitting_value = split_value
             (less, greater_or_equal) = split_on_numerical(data_set, best_attribute, split_value)
             node.children[0] = ID3(less, attribute_metadata, updated_numerical_splits_count, depth - 1)
