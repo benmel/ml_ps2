@@ -39,9 +39,13 @@ class Node:
         if self.label == None:
             key = instance[self.decision_attribute]
             if key == None:
-                import pdb;pdb.set_trace()
+                # mode  is stored in value
+                key = self.value
             if self.is_nominal == True:
-                return self.children[key].classify(instance)
+                child = self.children.get(key, self.children.get(self.value, None))
+                if child == None:
+                    child = self.children.values()[0]
+                return child.classify(instance)
             else:
                 if key < self.splitting_value:
                     return self.children[0].classify(instance)

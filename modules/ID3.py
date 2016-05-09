@@ -16,6 +16,10 @@ def ID3(data_set, attribute_metadata, numerical_splits_count, depth):
     ========================================================================================================
 
     '''
+    attribute_modes_dict = attribute_modes(data_set, attribute_metadata)
+    return ID3_recursive(data_set, attribute_metadata, numerical_splits_count, depth, attribute_modes_dict)
+
+def ID3_recursive(data_set, attribute_metadata, numerical_splits_count, depth, attribute_modes_dict):
     if depth == 0 or check_homogenous(data_set) is not None or len(attribute_metadata) == 0:
         return default_node(data_set)    
     else:
@@ -27,25 +31,42 @@ def ID3(data_set, attribute_metadata, numerical_splits_count, depth):
         node.decision_attribute = best_attribute
         node.name = attribute_metadata[best_attribute]['name']
         node.is_nominal = attribute_metadata[best_attribute]['is_nominal']
+        node.value = attribute_modes_dict[best_attribute]
         updated_numerical_splits_count = copy.deepcopy(numerical_splits_count)
         updated_numerical_splits_count[best_attribute] -= 1
 
         if node.is_nominal:
             examples = split_on_nominal(data_set, best_attribute)
             for key, values in examples.items():
-                node.children[key] = ID3(values, attribute_metadata, updated_numerical_splits_count, depth - 1)
+                node.children[key] = ID3_recursive(values, attribute_metadata, updated_numerical_splits_count, depth - 1, attribute_modes_dict)
         else:
             node.splitting_value = split_value
             (less, greater_or_equal) = split_on_numerical(data_set, best_attribute, split_value)
-            node.children[0] = ID3(less, attribute_metadata, updated_numerical_splits_count, depth - 1)
-            node.children[1] = ID3(greater_or_equal, attribute_metadata, updated_numerical_splits_count, depth - 1)
+            node.children[0] = ID3_recursive(less, attribute_metadata, updated_numerical_splits_count, depth - 1, attribute_modes_dict)
+            node.children[1] = ID3_recursive(greater_or_equal, attribute_metadata, updated_numerical_splits_count, depth - 1, attribute_modes_dict)
         
-        return node    
+        return node
         
 def default_node(data_set):
     node = Node()
     node.label = mode(data_set)
     return node
+
+def attribute_modes(data_set, attribute_metadata):
+    attr_dict = {}
+    iterator = enumerate(attribute_metadata)
+    next(iterator) # skip first
+    for idx, attribute in iterator:
+        attribute_data_set = []
+        for example in data_set:
+            if example[idx] is not None:
+                attribute_data_set.append([example[idx]])
+        if attribute['is_nominal']:        
+            attr_dict[idx] = mode(attribute_data_set)
+        else:
+            attr_sum = sum(x[0] for x in attribute_data_set)
+            attr_dict[idx] = attr_sum/float(len(attribute_data_set))
+    return attr_dict      
 
 def check_homogenous(data_set):
     '''
@@ -123,13 +144,12 @@ def mode(data_set):
     Output: mode of index 0.
     ========================================================================================================
     '''
-    frequency = [0, 0]
+    frequencies = {}
     for example in data_set:
-        if example[0] == 0:
-            frequency[0] += 1
-        else:
-            frequency[1] += 1
-    return 0 if frequency[0] >= frequency[1] else 1
+        count = frequencies.get(example[0], 0)
+        count += 1
+        frequencies[example[0]] = count
+    return max(frequencies.iterkeys(), key=(lambda k: frequencies[k]))
 # ======== Test case =============================
 # data_set = [[0],[1],[1],[1],[1],[1]]
 # mode(data_set) == 1
