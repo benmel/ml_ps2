@@ -13,32 +13,37 @@ def reduced_error_pruning(root,training_set,validation_set):
     NOTE you will probably not need to use the training set for your pruning strategy, but it's passed as an argument in the starter code just in case.
     '''
 
-    if root.label != None:
-        return
-    elif (True in map(lambda x: x.label == None, root.children.values())):
-        unpruned = validation_accuracy(root, validation_set)
-        children = root.children
-        root.label = mode(training_set)
-        root.children = {}
-        pruned = validation_accuracy(root, validation_set)
-        if pruned >= unpruned:
-            root.children = {}
-            return root
-        else:
-            root.label = None
-            root.children = children
-            return root
-    elif root.is_nominal:
-        matching = split_on_nominal(training_set, root.decision_attribute)
-        matching_v = split_on_nominal(validation_set, root.decision_attribute)
-        for k in matching.keys():
-            root.children[k] = reduced_error_pruning(root.children[k], matching[k], matching_v[k])
+    if root.label is not None or len(validation_set) == 0:
+        return root
+
+    node = Node()
+    node.label = mode(validation_set)
+
+    current_accuracy = validation_accuracy(root, validation_set)
+    pruned_accuracy = validation_accuracy(node, validation_set)
+
+    if current_accuracy < pruned_accuracy:
+        return node
+    
+    if root.is_nominal:
+        for key, value in root.children.items():
+            matching = []
+            for example in validation_set:
+                if example[root.decision_attribute] == key:
+                    matching.append(example)
+            root.children[key] = reduced_error_pruning(value, training_set, matching)
     else:
-        matching = split_on_numerical(training_set, root.decision_attribute, root.splitting_value)
-        matching_v = split_on_numerical(validation_set, root.decision_attribute, root.splitting_value)
-        root.children[0] = reduced_error_pruning(root.children[0], matching[0], matching_v[0])
-        root.children[1] = reduced_error_pruning(root.children[1], matching[1], matching_v[1])
-# 
+        matching_less = []
+        matching_greater_or_equal = []
+        for example in validation_set:
+            if example[root.decision_attribute] < root.splitting_value:
+                matching_less.append(example)
+            else:
+                matching_greater_or_equal.append(example) 
+        root.children[0] = reduced_error_pruning(root.children[0], training_set, matching_less)
+        root.children[1] = reduced_error_pruning(root.children[1], training_set, matching_greater_or_equal)
+   
+    return root            
 
 def validation_accuracy(tree,validation_set):
     '''
