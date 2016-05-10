@@ -55,3 +55,12 @@ def validation_accuracy(tree,validation_set):
         outputs += 1.0 if tree.classify(example) == example[0] else 0
         total += 1.0
     return outputs / total
+
+def countNodes(tree):
+	nodes = 0
+	if tree.label == None:
+		for key in tree.children.keys():
+			nodes += 1 + countNodes(tree.children[key])
+		return nodes
+	else:
+		return 0
